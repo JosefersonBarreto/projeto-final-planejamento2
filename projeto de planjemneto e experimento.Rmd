@@ -1,0 +1,454 @@
+---
+title: <p style="text-align:center"><img src="https://www.infoescola.com/wp-content/uploads/2018/05/UEPB.png" width="1200" height="360" /></p>
+  
+  
+  Planejamento e e Análise de experimentos <font color='white' face="Roman">II </font>-Relatório Final  <font color='white' face="Roman">I </font>
+author: <font color='black' face="Arial Black">joseferson da silva barreto  </font>
+date: <font color='black'> 20/12/2021 
+output: 
+  #rmarkdown::html_document:
+  prettydoc::html_pretty:
+   #theme: 
+      #ersion: 4
+     # bg: "#9ac7db"
+      #fg: "#5757b1" 
+      #primary: "#5c2cca"
+     # navbar-bg: "#13173C"
+      #base_font: 
+       # google: Prompt
+      #heading_font:
+       # google: Sen
+      #code_font:
+       # google: 
+          # arguments to sass::font_google() 
+          #family: JetBrains Mono
+         # local: false
+      #code_font:
+       # google: 
+          # arguments to sass::font_google() 
+        #  family: JetBrains Mono
+        #  local: false
+---
+
+<style>
+div.blue pre { background-color:lightblue; }
+div.blue pre.r { background-color:"#9ac7db"; }
+</style>
+
+
+<div class = "blue">
+
+
+<font color='black'>
+
+```{css my-header-colors, echo = FALSE}
+.page-header {
+     color: #fff;
+  text-align: center;
+  background-color: #9ac7db;
+    background-image: linear-gradient(120deg, #11706f, #9ac7db);
+}
+
+body {
+  background-color: #9ac7db;
+  
+}
+
+badCode {
+background-color: red;
+}
+
+
+.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+    background-color: purple;
+}
+```
+
+
+# <font color='black' face="Arial Black"> Relatório referente à análise de um banco de dados em DBC, utilizando parcela subdividida. </font>  
+
+
+
+
+
+# <font color='black' face="Arial Black"> Sumário </font>
+
+* **Resumo**
+
+* **Introdução**
+
+* **Metodologia**
+
+* **Conclusões** 
+
+* **Referências** 
+
+
+
+
+
+
+
+
+
+
+  
+
+## <font color='black' face="Arial Black"> Resumo </font>  
+
+ O objetivo do presente trabalho foi desenvolver uma metodologia adequada para análise de um  experimentos em parcelas subdivididas quando os tratamentos primários estão dispostos em uma estrutura de delineamento em blocos completos  parcialmente balanceados. Usando o método dos mínimos quadrados foram determinadas as expressões para as várias somas de quadrados que compõem a análise de variância e a composição do teste F.
+
+## <font color='black' face="Arial Black"> Introdução  </font>  
+
+No experimento em parcelas subdivididas, as parcelas experimentais são divididas em sub parcelas. São estudados dois ou mais fatores simultaneamente, tais fatores são chamados primários, secundários e assim por diante.    
+
+Os fatores primários são aleatorizados nas parcelas, os secundários nas sub parcelas. 
+O modelo linear para o experimento em parcelas subdivididas no delineamento em blocos ao acaso  
+é dado por:
+
+$yijk = µ + τi + βj + eij + θk + γik  + Ɛikj$
+
+onde:
+
+* µ é a média geral; 
+* τi é o efeito do i-ésimo tratamento sobre a variável resposta;
+* βj é o efeito do j-ésimo bloco sobre a variável resposta;
+* eik é o resíduo aleatório à nível de parcelas; 
+* θk é o efeito do k-ésimo sub-tratamento sobre a variável resposta;
+* γik é o efeito da interação do i-ésimo tratamento com o j-ésimo subtratamento sobre a variável resposta;
+* Ɛijk é o resíduo aleatório associado a observação yijk à nível de sub-parcelas. 
+
+Neste trabalho será analisado um banco de dados fictício de um experimento em blocos casualizados, onde há 3 tipos de ração bovina  (racao_comun, pasta_bovin e soja_bovina), 2 horários diferentes  
+(manhã e tarde ) com 3 repetições em blocos 
+casualizados.  
+
+### <font color='black' face="Arial Black"> Objetivo: </font> 
+
+Comparar se há diferença significativa na produção leite dependendo do tipo de alimentação fornecido as vacas e o horário do dia  
+
+
+# <font color='black' face="Arial Black"> Metodologia </font>    
+Para esta análise será utilizado o pacote `ExpDes.pt` para obter a ANOVA e demais resultados, além do software Rstudio.  
+
+### <font color='black' face="Arial Black">  Visualização dos 10 primeiros dados do Banco de Dados</font>  
+  
+
+
+```{r warning=FALSE, echo=FALSE, message=FALSE}
+library(readxl)
+library(dplyr)
+
+library(knitr)
+teste<-read.table("C:/Users/josef/Documents/josefersonbarreto/Parcela-subdividida/psubDBC.txt")
+ dados <- read_excel("C:/Users/josef/Documents/josefersonbarreto/projeto-final-planejamento2/dados.xlsx") 
+dados<- dados[-1]
+ library(knitr)
+kable(head(dados, 10))
+```
+
+
+
+```{r warning=FALSE, echo=FALSE, message=FALSE}
+
+
+
+
+
+banco<-data.frame(prod=c(dados$racao_Comun,dados$pasta_bovin,dados$soja),turno=as.factor(c(dados$Turno,
+              dados$Turno,dados$Turno)),blocos=as.factor(c(dados$rep,
+                  dados$rep,dados$rep)))
+
+
+banco$tipos_rações<-as.factor(c(rep("ração comun",360),rep("pasta bovina",360),rep("soja",360)))
+
+
+
+banco$prod<-as.numeric(banco$prod)
+
+
+```
+
+
+
+
+  
+## <font color='black' face="Arial Black">  Análise Descritiva  </font>   
+
+  
+## <font color='black' face="Arial Black">  Visualização do Experimento</font>  
+Aqui vemos o turno dado tipo de rações 
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+require(lattice)
+par(bg = '#9ac7db')
+xyplot(prod ~ turno|tipos_rações, groups=tipos_rações, data=banco, pch=c(19,20,1),auto.key=TRUE, jitter.x=T)
+```
+  
+ Aqui vemos os Rações dado o turno 
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+par(bg = '#9ac7db')
+xyplot(prod ~ tipos_rações|turno, groups=turno, data=banco, pch=c(19,20,1),auto.key=TRUE, jitter.x=T)
+
+
+
+```
+   
+### <font color='black' face="Arial Black">  Teste de Hipóteses </font>
+
+<font color='black' face="Arial Black">  Hipóteses que queremos testar: </font>   
+
+$H_0$: Não há diferença entre os Turnos(horários de coleta do leite das vacas) em relação a produtividade.  
+$H_1$: Há influência dos horários da coleta de leite  na produtividade.  
+  
+$H_0$:Não há diferença entre os blocos.  
+$H_1$: Há diferença entre os blocos.  
+  
+$H_0$: Não há diferença entre os tipos de rações na produtividade.  
+$H_1$: Há diferença dos tipos de rações na produção.  
+  
+$H_0$: A interação entre os tipos de rações e os horários de coleta do leite(turno)  não é significativa.  
+$H_1$: A interação entre os tipos de rações e os horários de coleta do leite(turno) é significativa.  
+
+
+# <font color='black' face="Arial Black">Criando o nosso modelo</font>
+
+Para criar o nosso modelo vamos utlizar a função **aov()** do pacote Stats, em sequência ,
+utilizaremos o comando **Summary**  para montagem do  quadro  da váriancia , popurlamente conhecido como quadro da Anova .
+
+
+
+
+
+###  <font color='black' face="Arial Black"> hipóteses da Anova </font> 
+
+$H_0 :$ Não existe diferença entre os tratamentos para $P \ge 0,05$
+
+
+$H_1 :$  ao menos um dos tratamentos diferem entre si $P < 0,05$
+
+```{r message=FALSE, warning=FALSE}
+library(DT)
+library(gt)
+attach(banco)
+dados1.av = aov(prod ~ tipos_rações*turno + Error(blocos:tipos_rações), data = banco)
+summary(dados1.av) 
+
+
+
+
+```
+  
+
+Aqui podemos ver o nosso primeiro modelo, é do tipo onde temos nossa variável resposta(oridução) sobre a interação dos tratamentos mais o erro de efeito de blocos associado ao tratamento primário
+
+
+
+como podemos analisar o Pvalor que é resultado da comparação do valor F encontrado 
+com os dados do experimento com o Ftabelado , ou seja , o R pega o valor encontrado de F
+e compara com o valor do Fpadrão(Ftabelado) considerando  o nível de significancia de 5% e como 
+podemos  observar ,nosso Pvalor é maior que 0,05% ,logo, não há diferenças nos tratamentos  há 95% de confiança.   
+  
+  
+# <font color='black' face="Arial Black">  Análise de Resíduos </font> 
+  
+```{r message=FALSE, warning=FALSE}
+dados.avb = aov(prod ~ tipos_rações*turno + blocos*tipos_rações-blocos,data =banco)
+summary(dados.avb)
+
+
+```
+
+
+Podemos Observar  Que o fator Turno deu significativo logo pelo menos um dos tipos de ração diferentes entre si. 
+
+
+```{r}
+par(bg = '#9ac7db')
+par(mfrow=c(2,2))
+plot(dados.avb)
+```
+
+  
+ Os resíduos pelo os valores previstos , ele nos permite observar tanto a linearidade quanto a homocedasticidade , mas como verificamos se de fato o modelo é linear ? nos conseguimos a resposta olhando a linha vermelha traçada nesse primeiro gráfico(**Residuals Vs Fited**) , caso a linha vermelha esteja aparentimente horizontal então temos a linearidade , logo , em osso caso esse presuposto foi atendido. Outro ponto a se observar nesse gráfico é a homocedasticidade que nada mais é que a homogenidade das variâncias , caso exista homogenacidade nos dados veremos a dispersão dos pontos de forma aproximadamente constante ao longo dos valores previstos de Y(que está no eixo X),ou seja , teriamos uma dispersão aproximadamente regular em forma de retângulo ao longo do gráfico ,perceba que esse é o nosso caso.Caso não exitesse homogenidade nos dados os valores formariam uma espécie de triângulo no gráfico.
+
+
+
+**normal QQ=** é o gráfico que nos permite ver sé os resíduos seguem distribuição normal , onde no eixo Y estão os resíduois padronizados e no eixo X os resíduos teóricos que seriam os resíduos esperados caso a distribuição fosse normal , para que os nosssos dados siga uma distruição normal , os valores devem estar em cima da linha pontilhada , embora  nem todos estejam em cima da linha , podemos considerar que está apróximadamente normal, caso não fosse atendido , estes pontos aprensentaria um formato de curva .
+
+
+**Scale_Location =** é o gráfico mais recomendado para ver a homogenacidade , caso exista homogenacidade a linha vermelha deve estar aproximadamente horizontal , que é nosso casso 
+
+
+**Residuals vs factor levals=**Pode ser útil para detectar a presença de pontos influenciantes. No nosso caso, não temos presença de infuenciadores, umas vez que a linha vermelha, a qual indica essa presença, tem como valor de resíduo igual a zero.
+
+ 
+ 
+### <font color='black' face="Arial Black">Teste de normalidade dos residuos ( Shapiro-Wilk ) </font>
+      
+  Vamos começar analisando o resultado do teste de normalidade de resíduos(Shapiro-Wilk)
+  
+  
+##  <font color='black' face="Arial Black">hipóteses:</font>
+
+$H_0 :$ existe normalidade nos resíduos para $P \ge 0,05$
+
+
+$H_1 :$  não existe normalidade dos resíduos  $P < 0,05$
+
+```{r message=FALSE, warning=FALSE}
+shapiro.test(dados.avb$residuals)
+
+```
+  
+Como o $P_{valor}< 0,05$ , rejeita-se a hipótese nula . Nesse sentido , temos que não existe normalidade nos resíduos.
+
+  
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+par(mfrow=c(1,3))
+par(bg = '#9ac7db')
+car::Boxplot(dados.avb$residuals~turno)
+car::Boxplot(dados.avb$residuals~tipos_rações)
+car::Boxplot(dados.avb$residuals~tipos_rações:turno, xlab=c("dia","tarde"))
+
+
+```
+
+Aqui temos a comparação das médias, perceba que quando olhamos os fatores individualmente os dados não apresentam valores extremos(outliers), isso muda quando passamos analisar a interação entre eles(ultimo gráfico).
+
+#  <font color='black' face="Arial Black">Analisando o resultado do  teste de homogenidade(bartlett) </font>
+  
+##  <font color='black' face="Arial Black">hipóteses:</font>
+
+$H_0 :$ existe homogenidade  na variância para $P \ge 0,05$
+
+
+$H_1 :$  não existe homogenidade  na variância  $P < 0,05$
+
+
+
+```{r}
+bartlett.test(dados.avb$residuals, turno)
+bartlett.test(dados.avb$residuals, tipos_rações)
+```
+
+
+
+
+De acordo com o teste de bartlett a 5% de significância, não rejeita-se a hipótese nula, logo, as variâncias podem ser consideradas homogêneas.
+
+
+
+
+
+
+
+### <font color='black' face="Arial Black">  Análise utilizando o pacote `ExpDes.pt`  </font> 
+
+ Para   realiza o dbC(**O delineamento em blocos casualizado **) vamos utilizar a função 
+ **psub2.dbc**  da biblioteca **ExpDes.pt** onde **tipos_rações** é  os tipos de rações , 
+ e  **turno** é os os turnos do dia em que ocorreram coleta do leite,**blocos** são as repetições do experimento ,**prod** são os valores observados
+ **mcomp=** com o argumento "Tukey"  para observar qual a fator teve um melhor desempenho na produção do leite **psub2.dbc**  considera o nível de significancia de 0,05% para a 
+ execução do teste .
+
+
+
+
+```{r message=FALSE, warning=FALSE}
+require(ExpDes.pt)
+psub2.dbc(tipos_rações, turno, blocos, prod, quali = c(TRUE, TRUE),mcomp = "tukey",
+          fac.names = c("rações", "turno"), sigF = 0.05)
+```
+
+
+# <font color='black' face="Arial Black"> Comparação de media para turno </font> 
+
+```{r message=FALSE, warning=FALSE}
+library(DT)
+library(readxl)
+media_t<-read_excel("media_turno.xlsx")
+
+
+media_t %>%datatable()
+```
+segundo o teste F as medias dos niveis do fator Turno foram iguais,como não temos diferença  significativa pelo teste f,logo ,as medias dos níveis do fator são estatisticamente iguais 
+
+
+
+# <font color='black' face="Arial Black"> Comparação de media para raçãoes </font>   
+
+```{r message=FALSE, warning=FALSE}
+library(DT)
+library(readxl)
+media_R<-read_excel("media_rações.xlsx")
+
+
+media_R %>%datatable()
+```
+
+
+
+podemos perceber que temos diferenças nos níveis do fator tipo de rações pelo teste F, logo , pelo o teste de tukey(comparação de médias) temos que soja e pasta bovina apresentaram os melhores resultados  
+
+
+
+# <font color='black' face="Arial Black">  Conclusão  </font>   
+Pela análise de Variâncias as interações  entre os fatores não foram significativas  , assim como o fator turno(horário da coleta do leite ) também não foi significativo na produção,apenas o fator ração foi de fato significativo na produção, tendo a pasta bovina e a soja o mesmo efeito na produção do leite . 
+
+
+
+
+# <font color='black' face="Arial Black"> Referências   </font>
+
+
+
+
+Depto. de Ciências Exatas-UFLA, C.P. 37, CEP: 37200-000 - Lavras, MG.
+São Paulo - Escola Superior de Agricultura "Luiz de Queiroz". EXPERIMENTOS EM PARCELAS SUBDIVIDIDAS COM TRATAMENTOS PRIMÁRIOS EM BLOCOS INCOMPLETOS PARCIALMENTE BALANCEADOS: II. ANÁLISE INTRABLOCOS . A.R. de MORAIS2; M.C.S. NOGUEIRA3, Jan 1996, DISPONÍVEL EM:
+<https://www.scielo.br/j/sa/a/LBrHXVfgRfhnH9SDxM9XpsJ/?lang=pt>
+
+
+
+
+
+
+
+
+# <font color='black' face="Arial Black"> Acesse meus outros projetos :   </font> 
+
+
+Relatório sobre os testes paramétricos e não paramétricos :
+
+
+
+
+
+ <a href="https://josefersonbarreto.github.io/relatorio-testes-nao-parametricos">
+  <img
+    src="C:/Users/josef/Downloads/WhatsApp Image 2021-12-23 at 16.01.24.jpeg"
+    width="500"
+    height="200"
+  />
+</a> 
+
+
+Análise Exploratória na linguagem  Python :
+
+ <a href="https://josefersonbarreto.github.io/exploratoriaPY/">
+  <img
+    src="C:/Users/josef/Downloads/WhatsApp Image 2021-12-23 at 16.04.50.jpeg"
+    width="500"
+    height="200"
+  />
+</a> 
+
+
+
+
+
+
+
+
+</div>
+</font>
+
+
