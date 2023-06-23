@@ -137,10 +137,10 @@ Para esta análise será utilizado o pacote `ExpDes.pt` para obter a ANOVA e dem
 ```{r warning=FALSE, echo=FALSE, message=FALSE}
 library(readxl)
 library(dplyr)
-
+getwd()
 library(knitr)
-teste<-read.table("C:/Users/josef/Documents/josefersonbarreto/Parcela-subdividida/psubDBC.txt")
- dados <- read_excel("C:/Users/josef/Documents/josefersonbarreto/projeto-final-planejamento2/dados.xlsx") 
+#teste<-read.table("C:/Users/joseferson/Documents/joseferson barreto/projeto-final-planejamento2/psubDBC.txt")
+ dados <- read_excel("C:/Users/joseferson/Documents/joseferson barreto/projeto-final-planejamento2/dados.xlsx") 
 dados<- dados[-1]
  library(knitr)
 kable(head(dados, 10))
